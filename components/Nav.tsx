@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store"; // Adjust the import based on your store configuration
@@ -33,7 +34,7 @@ const links = [
 interface User {
   firstName: string | null;
   lastName: string | null;
-  role: string | null;
+  role?: string | null;
 }
 
 interface NavProps {
@@ -78,6 +79,7 @@ const Nav: React.FC<NavProps> = ({
   const handleLogout = () => {
     dispatch(logout());
     // Optionally redirect to home or login page after logout
+    window.location.href = "/login";
   };
 
   const toggleMenu = () => {

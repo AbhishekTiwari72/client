@@ -101,9 +101,14 @@ const Nav: React.FC<NavProps> = ({
       ))} */}
 
       <form className="mx-auto">
-
-          {" "}
-            <Input type="name" id="firstname" autoComplete="off" placeholder="Search.........." />
+        {" "}
+  <Input
+    type="name"
+    id="firstname"
+    autoComplete="off"
+    placeholder="Search.........."
+    className="border-b-2 border-gray-300 h-[50px] focus:border-blue-500 bg-white rounded-md p-2"
+  />
 
       </form>
       {isAuthenticated ? (
@@ -130,6 +135,9 @@ const Nav: React.FC<NavProps> = ({
           Login
         </Link>
       )}
+
+
+      
     </nav>
   );
 };

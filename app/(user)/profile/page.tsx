@@ -1,9 +1,13 @@
-import React from 'react'
+import Form from "@/components/form";
+import React from "react";
 
 const Profile = () => {
   return (
-    <div>Profile PAge</div>
-  )
-}
+      <div className="container">
+        <Form />
+      </div>
 
-export default Profile
+  );
+};
+
+export default Profile;

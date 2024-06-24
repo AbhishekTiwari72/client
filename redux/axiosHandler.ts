@@ -10,13 +10,10 @@ const axiosInstance = axios.create({
   },
 });
 
-// Define types for request parameters
 type Method = 'get' | 'post' | 'put' | 'delete';
 
-// Define a custom error interface for API errors
 interface ApiError {
   message: string;
-  // You can define more specific error properties here as per your API's error response structure
 }
 
 // Function to make a request using axios
