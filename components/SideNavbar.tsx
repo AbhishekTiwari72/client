@@ -87,13 +87,13 @@ export default function SideNavbar({}: Props) {
                   },
                   {
                     title: "Users",
-                    href: "/users",
+                    href: "/user",
                     icon: UsersRound,
                     variant: "ghost",
                   },
                   {
-                    title: "Orders",
-                    href: "/orders",
+                    title: "Products",
+                    href: "/product",
                     icon: ShoppingCart,
                     variant: "ghost",
                   },

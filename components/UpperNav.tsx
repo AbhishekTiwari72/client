@@ -9,21 +9,10 @@ import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from "./ui/menubar";
-
-const links = [{ path: "/", name: "home" }];
+import { useRouter } from "next/navigation";
 
 interface User {
   firstName: string | null;
@@ -48,7 +37,11 @@ const Nav: React.FC<NavProps> = ({
     (state: RootState) => state.login
   );
 
+  const router = useRouter();
+
   const [data, setData] = useState<User | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(""); // State to store search query
+  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]); // State to store search suggestions
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,69 +49,98 @@ const Nav: React.FC<NavProps> = ({
         await setData(user);
       }
     };
-    fetchData(); // Call the async function immediately
+    fetchData();
   }, [user]);
 
-  const [menuOpen, setMenuOpen] = useState(false); // State to manage menu visibility
+  // Function to handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setSearchQuery(value);
 
-  const firstNameInitial = data?.firstName
-    ? data.firstName.charAt(0).toUpperCase()
-    : "";
-  const lastNameInitial = data?.lastName
-    ? data.lastName.charAt(0).toUpperCase()
-    : "";
+    // Call search API to fetch suggestions
+    fetchSuggestions(value);
+  };
 
-  console.log(data, "User");
+  const fetchSuggestions = async (keyword: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/search?keyword=${encodeURIComponent(
+          keyword
+        )}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch suggestions");
+      }
+      const data = await response.json();
+      console.log("API Response:", data); // Log API response to inspect its structure
+
+      // Ensure users and pages are handled properly
+      const combinedSuggestions = [
+        ...(data.users || []).map((user: any) => ({
+          ...user,
+          type: "user",
+          url: `/user/${user._id}`,
+        })),
+        ...(data.pages || []),
+      ];
+
+      setSearchSuggestions(combinedSuggestions); // Set combined suggestions
+
+      // Log search result for debugging purposes
+      console.log("Search result:", combinedSuggestions);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      setSearchSuggestions([]); // Handle error by setting suggestions to empty array
+    }
+  };
 
   const handleLogout = () => {
     dispatch(logout());
     // Optionally redirect to home or login page after logout
   };
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+  const handleSearchSuggestionSelect = (suggestion: any) => {
+    console.log("Navigating to", suggestion); // Example navigation log
+
+    router.push(suggestion.url);
   };
 
   return (
     <nav className={`${containerStyles}`}>
-      {/* {links.map((link, index) => (
-        <Link
-          href={link.path}
-          key={index}
-          className={`uppercase ${linkStyles}`}
-        >
-          {link.path === path && (
-            <motion.span
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              transition={{ type: "tween" }}
-              layoutId="underline"
-              className={`${underlineStyles}`}
-            />
-          )}
-          {link.name}
-        </Link>
-      ))} */}
-
       <form className="mx-auto">
-        {" "}
-  <Input
-    type="name"
-    id="firstname"
-    autoComplete="off"
-    placeholder="Search.........."
-    className="border-b-2 border-gray-300 h-[50px] focus:border-blue-500 bg-white rounded-md p-2"
-  />
-
+        <Input
+          type="text"
+          id="search"
+          autoComplete="off"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="border-b-2 border-gray-300 h-[50px] focus:border-blue-500 bg-white rounded-md p-2"
+        />
+        {searchSuggestions.length > 0 && (
+          <ul className="absolute left-0 right-0 mt-1 bg-white border rounded-md shadow-lg z-10">
+            {searchSuggestions.map((suggestion, index) => (
+              <li
+                key={index}
+                className="cursor-pointer py-1 px-2 hover:bg-gray-100"
+                onClick={() => handleSearchSuggestionSelect(suggestion)}
+              >
+                {suggestion.title} {" "}
+                {suggestion.firstName} {suggestion.lastName}
+              </li>
+            ))}
+          </ul>
+        )}
       </form>
+
       {isAuthenticated ? (
         <div className="uppercase">
           <DropdownMenu>
             <DropdownMenuTrigger
               className={`inline-block ${linkStyles} rounded-full bg-blue-200 p-2 cursor-pointer`}
             >
-              {firstNameInitial}
-              {lastNameInitial}
+              {data?.firstName?.charAt(0).toUpperCase()}
+              {data?.lastName?.charAt(0).toUpperCase()}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuLabel
@@ -135,9 +157,6 @@ const Nav: React.FC<NavProps> = ({
           Login
         </Link>
       )}
-
-
-      
     </nav>
   );
 };
